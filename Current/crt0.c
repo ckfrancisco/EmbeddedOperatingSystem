@@ -57,7 +57,6 @@ void showarg(int argc, char *argv[ ])
 // NOW: r0 is NOT trashed in goUmode() ==> should be r0 alone
 void main0(char *s)
 {
-  printf("HELLO WORLD!!");
   if (s){
     //printf("s=%s\n", s);
      token(s);
