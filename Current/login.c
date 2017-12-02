@@ -7,6 +7,8 @@ int tokenize(int fd, char *buf, char token, int position)
 {
     int nbytes = 0;
 
+    lseek(fd, position, 0);
+
     while(read(fd, buf, 1) > 0)
     {
         nbytes++;
@@ -17,7 +19,7 @@ int tokenize(int fd, char *buf, char token, int position)
     lseek(fd, position, 0);
 
     read(fd, buf, nbytes);
-    buf[nbytes] = 0;
+    buf[nbytes - 1] = 0;
 
     return nbytes;
 }
@@ -37,9 +39,11 @@ int myatoi(char *buf)
 
 int mystrcmp(char *s1, char *s2)
 {
+    int count = 0;
+
     while(*(s1++) == *(s2++) && *s1 && *s2);
 
-    if(!(*s1 && *s2))
+    if(!(*s1 || *s2))
         return 1;
     return 0;
 }
@@ -61,9 +65,9 @@ main(int argc, char *argv[])
     out = open(argv[1], O_WRONLY);
     err = open(argv[1], O_WRONLY);
 
-    fixtty(argv[1]);                    // set tty name string in PROC.tty
+    fixtty(argv[1]);                        // set tty name string in PROC.tty
 
-    passwd = open("/etc/passwd", O_RDONLY);  // open /etc/passwd file for READ;
+    passwd = open("/etc/passwd", O_RDONLY); // open /etc/passwd file for READ;
 
     while(1){
         printf("login:");
@@ -75,13 +79,43 @@ main(int argc, char *argv[])
 
         while(tokenize(passwd, buf1, '\r', line))
         {
-            lseek(passwd, line, 0);
-            printf("COUNT=%d NBYTES=%d STRING=%s\r", count, nbytes, buf1);
-            line += tokenize(passwd, buf1, '\n', line);
-            printf("COUNT=%d NBYTES=%d STRING=%s\n\r", count++, nbytes, buf1);
+            position += tokenize(passwd, buf1, ':', position);
+            // printf("NAME=%s\n", buf1);
+
+            position += tokenize(passwd, buf2, ':', position);
+            // printf("PASSWORD=%s\n", buf2);
+
+            if(mystrcmp(name, buf1) && mystrcmp(password, buf2))
+            {
+                position += tokenize(passwd, buf1, ':', position);
+                printf("UID=%s\n", buf1);
+
+                position += tokenize(passwd, buf2, ':', position);
+                printf("GID=%s\n", buf2);
+
+                uid = myatoi(buf1); gid = myatoi(buf2);
+                printf("UID=%d GID=%d\n", uid, gid);
+                chuid(uid, gid);
+
+                position += tokenize(passwd, buf1, ':', position);
+                position += tokenize(passwd, buf1, ':', position);
+                printf("DIR=%s\n", buf1);
+                chdir(buf1);
+
+                position += tokenize(passwd, buf1, '\n', position);
+                printf("CMD=%s\n", buf1);
+
+                close(passwd);
+
+                exec(buf1);
+
+                close(in); close(out); close(err); close(passwd);
+                return;
+            }
+
+            position = line += tokenize(passwd, buf1, '\n', line);
         }
 
-        close(in); close(out); close(err); close(passwd);
-        printf("login failed, try again\n");
+        printf("login failed, try again\n\r");
     }
 }
