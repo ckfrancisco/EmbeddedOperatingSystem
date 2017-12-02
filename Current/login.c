@@ -75,8 +75,8 @@ main(int argc, char *argv[])
 
         while(tokenize(passwd, buf1, '\r', line))
         {
-            printf("COUNT=%d NBYTES=%d STRING=%s\n\r", count, nbytes, buf1);
-            line += tokenize(passwd, buf1, '\n', line);
+            lseek(passwd, line, 0);
+            printf("COUNT=%d NBYTES=%d STRING=%s\r", count, nbytes, buf1);
             line += tokenize(passwd, buf1, '\n', line);
             printf("COUNT=%d NBYTES=%d STRING=%s\n\r", count++, nbytes, buf1);
         }
