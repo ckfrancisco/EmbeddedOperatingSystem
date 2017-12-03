@@ -52,6 +52,8 @@ main(int argc, char *argv[])
                     maxcount = 1;
             }
         }
+
+        close(fd);
     }
 
     

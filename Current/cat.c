@@ -20,7 +20,7 @@ main(int argc, char *argv[])
 
         while(read(fd, &c, 1) > 0)
             mputc(c);
-    }
 
-    close(fd);
+        close(fd);
+    }
 }
