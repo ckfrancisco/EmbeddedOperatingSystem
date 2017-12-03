@@ -2,19 +2,13 @@
 
 main(int argc, char *argv[])
 {
-    int file, nbytes;
-    char buf[256];
+    int fd;
+    char c;
 
-    if(argc < 1)
-        return;
-    
-    file = open(argv[1], O_RDONLY);
+    fd = open(argv[1], O_RDONLY);
 
-    while(nbytes = read(file, buf, 255))
-    {
-        buf[nbytes] = 0;
-        printf("%s", buf);
-    }
+    while(read(fd, &c, 1) > 0)
+        mputc(c);
 
-    close(file);
+    close(fd);
 }
