@@ -17,6 +17,10 @@ main(int argc, char *argv[])
     else
     {
         fd = open(argv[1], O_RDONLY);
+        if(fd < 0)
+        {
+            printf("Error: %s does not exist\n\r", argv[1]);
+        }
 
         while(read(fd, &c, 1) > 0)
             mputc(c);
