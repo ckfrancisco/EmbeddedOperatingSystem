@@ -9,12 +9,12 @@ char capitalize(char c)
 
 main(int argc, char *argv[])
 {
-    int in, out, fdi, fdo;
+    int fdi, fdo;
     char c;
 
     if(argc < 3)
     {
-        while(c = getc())
+        while(read(0, &c, 1))
         {
             c = capitalize(c);
             mputc(c);
@@ -25,16 +25,25 @@ main(int argc, char *argv[])
 
     else
     {
-        fd = open(argv[2], O_RDONLY);
-        if(fd < 0)
+        fdi = open(argv[1], O_RDONLY);
+        if(fdi < 0)
         {
             printf("Error: %s does not exist\n\r", argv[1]);
         }
-        
-        in = dup(0);
-        dup2(fd, 0);
 
-        dup2(in, 0);
-        close(in); close(fd);
+        fdo = open(argv[2], O_WRONLY | O_CREAT);
+        if(fdo < 0)
+        {
+            close(fdi);
+            printf("Error: %s does not exist\n\r", argv[1]);
+        }
+
+        while(read(fdi, &c, 1))
+        {
+            c = capitalize(c);
+            write(fdo, &c, 1);
+        }
+
+        close(fdi); close(fdo);
     }
 }
