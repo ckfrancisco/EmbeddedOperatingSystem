@@ -35,7 +35,7 @@ main(int argc, char *argv[])
         if(fdo < 0)
         {
             close(fdi);
-            printf("Error: %s does not exist\n\r", argv[1]);
+            printf("Error: %s does not exist\n\r", argv[2]);
         }
 
         while(read(fdi, &c, 1))
