@@ -3,7 +3,7 @@
 
 #include "ucode.c"
 
-int mytokenize(int fd, char *buf, char token, int position)
+int mtokenize(int fd, char *buf, char token, int position)
 {
     int nbytes = 0;
     char *cp = buf;
@@ -23,7 +23,7 @@ int mytokenize(int fd, char *buf, char token, int position)
     return nbytes;
 }
 
-int myatoi(char *buf)
+int matoi(char *buf)
 {
     int result = 0;
 
@@ -36,7 +36,7 @@ int myatoi(char *buf)
     }
 }
 
-int mystrcmp(char *s1, char *s2)
+int mstrcmp(char *s1, char *s2)
 {
     int count = 0;
 
@@ -76,34 +76,34 @@ main(int argc, char *argv[])
 
         line = position = 0;
 
-        while(mytokenize(passwd, buf1, '\r', line))
+        while(mtokenize(passwd, buf1, '\r', line))
         {
             //printf("FILE=%s\n", buf1);
 
-            position += mytokenize(passwd, buf1, ':', position);
+            position += mtokenize(passwd, buf1, ':', position);
             //printf("NAME=%s\n", buf1);
 
-            position += mytokenize(passwd, buf2, ':', position);
+            position += mtokenize(passwd, buf2, ':', position);
             //printf("PASSWORD=%s\n", buf2);
 
-            if(mystrcmp(name, buf1) && mystrcmp(password, buf2))
+            if(mstrcmp(name, buf1) && mstrcmp(password, buf2))
             {
-                position += mytokenize(passwd, buf1, ':', position);
+                position += mtokenize(passwd, buf1, ':', position);
                 //printf("UID=%s\n", buf1);
 
-                position += mytokenize(passwd, buf2, ':', position);
+                position += mtokenize(passwd, buf2, ':', position);
                 //printf("GID=%s\n", buf2);
 
-                uid = myatoi(buf1); gid = myatoi(buf2);
+                uid = matoi(buf1); gid = matoi(buf2);
                 //printf("UID=%d GID=%d\n", uid, gid);
                 chuid(uid, gid);
 
-                position += mytokenize(passwd, buf1, ':', position);
-                position += mytokenize(passwd, buf1, ':', position);
+                position += mtokenize(passwd, buf1, ':', position);
+                position += mtokenize(passwd, buf1, ':', position);
                 //printf("DIR=%s\n", buf1);
                 chdir(buf1);
 
-                position += mytokenize(passwd, buf1, '\n', position);
+                position += mtokenize(passwd, buf1, '\n', position);
                 //printf("CMD=%s\n", buf1);
 
                 close(passwd);
@@ -114,7 +114,7 @@ main(int argc, char *argv[])
                 return;
             }
 
-            position = line += mytokenize(passwd, buf1, '\n', line);
+            position = line += mtokenize(passwd, buf1, '\n', line);
         }
 
         printf("login failed, try again\n\r");
