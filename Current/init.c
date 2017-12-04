@@ -29,10 +29,16 @@ int parent()
 main()
 {
     int in, out;
+    // STAT buf;
 
     // file descriptors for terminal I/O
     in = open("/dev/tty0", O_RDONLY); // file descriptor 0
     out = open("/dev/tty0", O_WRONLY); // for display to console
+
+    // fstat(in, &buf);
+    // printf("    IN DEV=%d INO=%d\n\r", buf.st_dev, buf.st_ino);
+    // fstat(out, &buf);
+    // printf("    IN DEV=%d INO=%d\n\r", buf.st_dev, buf.st_ino);
     
     printf("INIT: fork a login proc on console\n\r");
     console = fork();
