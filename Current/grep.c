@@ -27,39 +27,41 @@ int substring(char *pattern, char *s)
 
 main(int argc, char *argv[])
 {
-    int in, fd;
-    char buf[256];
+    int fd;
+    char tty[16], buf[1024];
+    STAT ttystat, instat;
 
     if(argc < 2)
-        return;
-
-    if(argc < 3)
+        exit(0);
+    if(argc > 2)
     {
+        fd = open(argv[2], O_RDONLY);
+        if(fd < 0)
+        {
+            printf("Error: %s does not exist\n\r", argv[2]);
+            exit(0);
+        }
+
+        dup2(fd, 0); 
+    }
+
+    gettty(tty);
+    stat(tty, &ttystat);
+    fstat(0, &instat);
+        
+    if(ttystat.st_dev == instat.st_dev && ttystat.st_ino == instat.st_ino)
         while(gets(buf))
         {
             if(substring(argv[1], buf))
                 printf("%s\n\r", buf);
         }
-    }
 
     else
-    {
-        fd = open(argv[2], O_RDONLY);
-        if(fd < 0)
-        {
-            printf("Error: %s does not exist\n\r", argv[1]);
-        }
-
-        in = dup(0);
-        dup2(fd, 0);
-
         while(getline(buf))
         {
             if(substring(argv[1], buf))
                 printf("%s", buf);
         }
 
-        dup2(in, 0);
-        close(in); close(fd);
-    }
+    exit(1);
 }
