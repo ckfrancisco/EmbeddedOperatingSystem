@@ -3,6 +3,9 @@
 int pipec;
 char *pipev[32];
 
+int rdirc;
+char *rdirv[32];
+
 
 int pipetoken(char *cmd)
 {
@@ -22,6 +25,26 @@ int pipetoken(char *cmd)
        cp++;
   }
   pipev[pipec] = 0;
+}
+
+int rdirtoken(char *cmd)
+{
+  char *cp;
+  cp = cmd;
+  rdirc = 0;
+  
+  while (*cp != 0){
+       while (*cp == ' ') *cp++ = 0;        
+       if (*cp != 0)
+           rdirv[rdirc++] = cp;         
+       while (*cp != ' ' && *cp != 0) cp++;                  
+       if (*cp != 0)   
+           *cp = 0;                   
+       else 
+            break; 
+       cp++;
+  }
+  rdirv[rdirc] = 0;
 }
 
 void showpipe()
@@ -47,7 +70,104 @@ int mstrncmp(char *s1, char *s2, int n)
     return 0;
 }
 
-int run(int pipec, char *pipev[], int *pd)
+int mstrcpy(char *dst, char *src)
+{
+    while(*dst++ = *src++);
+}
+
+int checkredirect(char *cmd)
+{
+    int i, fdi, fdo;
+    char buf[32], *cp;
+
+    mstrcpy(buf, cmd);
+    // printf("    REDIRECT %s\n\r", buf);
+    rdirtoken(buf);
+
+    i = 0;
+    while(i < rdirc)
+    {
+        // printf("    BUF %d %s\n\r", i, rdirv[i]);
+        i++;
+    }
+
+    i = 0;
+    while(i < rdirc)
+    {
+        // printf("    LOOP %d %s\n\r", i, rdirv[i]);
+
+        if(mstrncmp(rdirv[i], ">>", 2))
+        {
+            i++;
+            if(i < rdirc)
+            {
+                fdo = open(rdirv[i], O_APPEND | O_CREAT);
+                if(fdo < 0)
+                {
+                    // printf("Error: %s does not exist\n\r", rdirv[i]);
+                    exit(0);
+                }
+
+                // printf("        DUP2 APPEND %s\n\r", i, argv[i]);
+                dup2(fdo, 1);
+            }
+        }
+
+        if(mstrncmp(rdirv[i], ">", 1))
+        {
+            i++;
+            if(i < rdirc)
+            {
+                fdo = open(rdirv[i], O_WRONLY | O_CREAT);
+                if(fdo < 0)
+                {
+                    // printf("Error: %s does not exist\n\r", rdirv[i]);
+                    exit(0);
+                }
+
+                // printf("        DUP2 WRITE %s\n\r", i, argv[i]);
+                dup2(fdo, 1);
+            }
+        }
+
+        if(mstrncmp(rdirv[i], "<", 1))
+        {
+            i++;
+            if(i < rdirc)
+            {
+                fdi = open(rdirv[i], O_RDONLY);
+                if(fdi < 0)
+                {
+                    // printf("Error: %s does not exist\n\r", rdirv[i]);
+                    exit(0);
+                }
+
+                // printf("        DUP2 READ %s\n\r", i, argv[i]);
+                dup2(fdi, 0);
+            }
+        }
+
+        i++;
+    }
+
+    // printf("    CHECKED REDIRECT\n\r");
+
+    cp = cmd;
+    while(*cp)
+    {
+        if(*cp == '>' || *cp == '<')
+        {
+            *cp = 0;
+            break;
+        }
+        cp++;
+    }
+
+    // printf("    RUNNING %s\n\r", cmd);
+    exec(cmd);
+}
+
+int checkpipe(int pipec, char *pipev[], int *pd)
 {
     int pid;
     int newpd[2];
@@ -68,13 +188,13 @@ int run(int pipec, char *pipev[], int *pd)
 		{
             // printf("    %s IS GOING TO READ\n", pipev[pipec - 1]);
             close(newpd[1]); dup2(newpd[0], 0);
-			exec(pipev[pipec - 1]);
+			checkredirect(pipev[pipec - 1]);
 			exit(1);
 		}
 		
 		else
 		{
-            run(pipec - 1, pipev, newpd);
+            checkpipe(pipec - 1, pipev, newpd);
 			exit(1);
 		}
     }
@@ -82,7 +202,7 @@ int run(int pipec, char *pipev[], int *pd)
     else
     {
         // printf("    NO NEED TO PIPE\n\r");
-        exec(pipev[pipec - 1]);
+        checkredirect(pipev[pipec - 1]);
         exit(1);
     }
 } 
@@ -92,12 +212,12 @@ main()
     int pid, status;
     char cmd[256];
 
-    signal(2, &(main));
+    signal(2, &main);
     
     while(1)
     {
         printf("cf: ");
-        if(!gets(cmd))
+        if(!gets(cmd) || cmd[0] == 0)
             continue;
 
         pipetoken(cmd);
@@ -112,13 +232,11 @@ main()
 
         if(pid = fork())
 		{
-            printf("    PARENT\n");
             pid = wait(&status);
         }
 		else
 		{
-            printf("    CHILD\n");
-            run(pipec, pipev, 0);
+            checkpipe(pipec, pipev, 0);
         }
     }
 }
