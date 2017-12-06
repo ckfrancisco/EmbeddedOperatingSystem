@@ -29,7 +29,7 @@ void showpipe()
   int i;
   printf("pipec=%d\n\r", pipec);
   for (i=0; i<pipec; i++)
-    printf("    1%s1\n\r", pipev[i]);
+    printf("    %s\n\r", pipev[i]);
   prints("\n");
 }
 
@@ -52,21 +52,21 @@ int run(int pipec, char *pipev[], int *pd)
     int pid;
     int newpd[2];
 
-    printf("    PIPEC=%d PIPEV=%s PD=%d\n", pipec, pipev[pipec - 1], pd);
+    // printf("    PIPEC=%d PIPEV=%s PD=%d\n", pipec, pipev[pipec - 1], pd);
     if(pd)
     {
-        printf("    %s IS GOING TO WRITE\n", pipev[pipec - 1]);
+        // printf("    %s IS GOING TO WRITE\n", pipev[pipec - 1]);
         close(pd[0]); dup2(pd[1], 1);
     }
 
     if(pipec > 1) // work for first cmd in pipe
     {
-        printf("    STILL NEED TO PIPE\n\r");
+        // printf("    STILL NEED TO PIPE\n\r");
         pipe(newpd);
 		
 		if(pid = fork())
 		{
-            printf("    %s IS GOING TO READ\n", pipev[pipec - 1]);
+            // printf("    %s IS GOING TO READ\n", pipev[pipec - 1]);
             close(newpd[1]); dup2(newpd[0], 0);
 			exec(pipev[pipec - 1]);
 			exit(1);
@@ -81,7 +81,7 @@ int run(int pipec, char *pipev[], int *pd)
 
     else
     {
-        printf("    NO NEED TO PIPE\n\r");
+        // printf("    NO NEED TO PIPE\n\r");
         exec(pipev[pipec - 1]);
         exit(1);
     }
@@ -92,12 +92,13 @@ main()
     int pid, status;
     char cmd[256];
 
+    signal(2, &(main));
     
     while(1)
     {
         printf("cf: ");
         if(!gets(cmd))
-            exit(1);
+            continue;
 
         pipetoken(cmd);
         //showpipe();
@@ -111,12 +112,13 @@ main()
 
         if(pid = fork())
 		{
+            printf("    PARENT\n");
             pid = wait(&status);
         }
 		else
 		{
+            printf("    CHILD\n");
             run(pipec, pipev, 0);
-            printf("cf: ");
         }
     }
 }
