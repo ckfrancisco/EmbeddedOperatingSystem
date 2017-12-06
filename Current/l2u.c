@@ -28,7 +28,6 @@ main(int argc, char *argv[])
 
     if(argc > 2)
     {
-        printf("    OPENING TO WRITE\n\r");
         fdo = open(argv[2], O_WRONLY | O_CREAT);
         if(fdo < 0)
         {
