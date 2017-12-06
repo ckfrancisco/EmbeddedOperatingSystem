@@ -2,8 +2,8 @@
 
 main(int argc, char *argv[])
 {
-    int in, fd, ncount, maxcount;
-    char tty[16], buf[1024];
+    int in, fd, ncount, maxcount, i;
+    char tty[16], c;
     STAT ttystat, instat;
 
     if(argc > 1)
@@ -26,15 +26,33 @@ main(int argc, char *argv[])
     maxcount = 20;
         
     if(ttystat.st_dev == instat.st_dev && ttystat.st_ino == instat.st_ino)
-        while(gets(buf))
-        {
-            printf("%s\n\r", buf);
-        }
+        exit(1);
 
     else
-        while(getline(buf))
+        in = open("/dev/tty0", O_RDONLY);
+        
+    while(read(0, &c, 1))
         {
-            printf("%s", buf);
+            mputc(c);
+
+            if(c == '\n')
+            {
+                ncount++;
+            }
+
+            if(ncount >= maxcount)
+            {
+                ncount = 0;
+
+                read(in, &c, 1);
+
+                if(c == ' ')
+                    maxcount = 20;
+                else if(c == 'q')
+                    exit(1);
+                else
+                    maxcount = 1;
+            }
         }
 
     exit(1);
