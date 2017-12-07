@@ -3,7 +3,7 @@
 main(int argc, char *argv[])
 {
     int fd;
-    char tty[16], buf[1024];
+    char tty[16], c;
     STAT ttystat, instat;
 
     if(argc > 1)
@@ -20,15 +20,15 @@ main(int argc, char *argv[])
 
     gettty(tty);
     stat(tty, &ttystat);
-    fstat(0, &instat);
+    fstat(1, &instat);
         
     if(ttystat.st_dev == instat.st_dev && ttystat.st_ino == instat.st_ino)
-        while(gets(buf))
-            printf("%s\n\r", buf);
+        while(read(0, &c, 1))
+            mputc(c);
 
     else
-        while(getline(buf))
-            printf("%s", buf);
+        while(read(0, &c, 1))
+            write(1, &c, 1);
 
     exit(1);
 }
