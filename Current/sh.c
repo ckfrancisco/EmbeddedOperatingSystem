@@ -101,7 +101,7 @@ int checkredirect(char *cmd)
             i++;
             if(i < rdirc)
             {
-                fdo = open(rdirv[i], O_APPEND | O_CREAT);
+                fdo = open(rdirv[i], O_WRONLY | O_APPEND | O_CREAT);
                 if(fdo < 0)
                 {
                     // printf("Error: %s does not exist\n\r", rdirv[i]);
@@ -113,12 +113,12 @@ int checkredirect(char *cmd)
             }
         }
 
-        if(mstrncmp(rdirv[i], ">", 1))
+        else if(mstrncmp(rdirv[i], ">", 1))
         {
             i++;
             if(i < rdirc)
             {
-                fdo = open(rdirv[i], O_WRONLY | O_CREAT);
+                fdo = open(rdirv[i], O_WRONLY | O_CREAT | O_TRUNC);
                 if(fdo < 0)
                 {
                     // printf("Error: %s does not exist\n\r", rdirv[i]);
@@ -130,7 +130,7 @@ int checkredirect(char *cmd)
             }
         }
 
-        if(mstrncmp(rdirv[i], "<", 1))
+        else if(mstrncmp(rdirv[i], "<", 1))
         {
             i++;
             if(i < rdirc)
