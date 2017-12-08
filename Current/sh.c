@@ -189,13 +189,13 @@ int checkpipe(int pipec, char *pipev[], int *pd)
             // printf("    %s IS GOING TO READ\n", pipev[pipec - 1]);
             close(newpd[1]); dup2(newpd[0], 0);
 			checkredirect(pipev[pipec - 1]);
-			exit(1);
+			exit(0);
 		}
 		
 		else
 		{
             checkpipe(pipec - 1, pipev, newpd);
-			exit(1);
+			exit(0);
 		}
     }
 
@@ -203,7 +203,7 @@ int checkpipe(int pipec, char *pipev[], int *pd)
     {
         // printf("    NO NEED TO PIPE\n\r");
         checkredirect(pipev[pipec - 1]);
-        exit(1);
+        exit(0);
     }
 } 
 
@@ -226,8 +226,14 @@ main()
         if(mstrncmp(cmd, "cd", 2))
         {
             token(cmd);
-            chdir(argv[1]);
+            if(argv[1])
+                chdir(argv[1]);
             continue;
+        }
+
+        if(mstrncmp(cmd, "logout", 6))
+        {
+            exit(0);
         }
 
         if(pid = fork())

@@ -3,32 +3,44 @@
 int console;
 
 // P1's code
-int parent()
+int parent(int login[])
 {
-    int pid, status;
+    int i, pid, status;
 
     while(1){
         printf("INIT : wait for ZOMBIE child\n\r");
         pid = wait(&status);
 
-        if (pid==console){
-            // if console login process died
-            printf("INIT: forks a new console login\n\r");
-            console = fork(); // fork another one
+        i = 0;
+        while(i < 3)
+        {
+            if(pid == login[i])
+            {
+                login[i] = fork();
 
-            if (console)
-                continue;
-            else
-                exec("login /dev/tty0"); // new console login process
+                if(login[i])
+                    continue;
+                else
+                {
+                    if(i == 0)
+                        exec("login /dev/tty0");
+                    else if(i == 0)
+                        exec("login /dev/ttyS0");
+                    else if(i == 0)
+                        exec("login /dev/ttyS1");
+                }
             }
 
+            i++;
+        }
+        
         printf("INIT: I just buried an orphan child proc %d\n\r", pid);
     }
 }
 
 main()
 {
-    int in, out;
+    int in, out, login[3];
     // STAT buf;
 
     // file descriptors for terminal I/O
@@ -41,10 +53,23 @@ main()
     // printf("    IN DEV=%d INO=%d\n\r", buf.st_dev, buf.st_ino);
     
     printf("INIT: fork a login proc on console\n\r");
-    console = fork();
-    
-    if (console) // parent
-        parent();
-    else // child: exec to login on tty0
+    login[0] = fork();
+    if (login[0])
+    {
+        printf("INIT: fork a login proc on console\n\r");
+        login[1] = fork();
+        if (login[1])
+        {
+            printf("INIT: fork a login proc on console\n\r");
+            login[2] = fork();
+            if (login[2])
+                parent(login);
+            else
+                exec("login /dev/ttyS1");
+        }
+        else
+            exec("login /dev/ttyS0");
+    }
+    else
         exec("login /dev/tty0");
 }
