@@ -32,14 +32,14 @@ main(int argc, char *argv[])
     STAT ttystat, instat;
 
     if(argc < 2)
-        exit(0);
+        exit(1);
     if(argc > 2)
     {
         fd = open(argv[2], O_RDONLY);
         if(fd < 0)
         {
             printf("Error: %s does not exist\n\r", argv[2]);
-            exit(0);
+            exit(1);
         }
 
         dup2(fd, 0); 
@@ -63,5 +63,5 @@ main(int argc, char *argv[])
                 printf("%s", buf);
         }
 
-    exit(1);
+    exit(0);
 }

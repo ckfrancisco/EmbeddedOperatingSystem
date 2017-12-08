@@ -12,7 +12,7 @@ main(int argc, char *argv[])
         if(fd < 0)
         {
             printf("Error: %s does not exist\n\r", argv[2]);
-            exit(0);
+            exit(1);
         }
 
         dup2(fd, 0); 
@@ -22,6 +22,7 @@ main(int argc, char *argv[])
     stat(tty, &ttystat);
     fstat(0, &instat);
 
+    in = 0;
     ncount = 0;
     maxcount = 20;
         
@@ -29,7 +30,7 @@ main(int argc, char *argv[])
         exit(1);
 
     else
-        in = open("/dev/tty0", O_RDONLY);
+        in = open(tty, O_RDONLY);
         
     while(read(0, &c, 1))
         {
@@ -49,11 +50,11 @@ main(int argc, char *argv[])
                 if(c == ' ')
                     maxcount = 20;
                 else if(c == 'q')
-                    exit(1);
+                    exit(0);
                 else
                     maxcount = 1;
             }
         }
 
-    exit(1);
+    exit(0);
 }
