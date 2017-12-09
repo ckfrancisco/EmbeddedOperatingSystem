@@ -27,11 +27,20 @@ main(int argc, char *argv[])
     if(ttystat.st_dev == instat.st_dev && ttystat.st_ino == instat.st_ino)
         while(read(0, &c, 1))
         {
-            mputc(c);
-            
-            if(ttystat.st_dev != outstat.st_dev || ttystat.st_ino != outstat.st_ino)
+            if(ttystat.st_dev == outstat.st_dev && ttystat.st_ino == outstat.st_ino)
             {
+                write(1, &c, 1);
+                if(c == '\r')
+                {
+                    c = '\n';
+                    write(out, &c, 1);
+                }
+            }
+            else
+            {
+                write(1, &c, 1);
                 write(out, &c, 1);
+
                 if(c == '\r')
                 {
                     c = '\n';
@@ -42,7 +51,14 @@ main(int argc, char *argv[])
 
     else
         while(read(0, &c, 1))
-            write(1, &c, 1);
+        {
+            if(ttystat.st_dev == outstat.st_dev && ttystat.st_ino == outstat.st_ino)
+                mputc(c);
+            else
+                write(1, &c, 1);
+            
+                
+        }
 
     exit(0);
 }
